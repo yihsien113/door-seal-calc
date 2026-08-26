@@ -2,59 +2,78 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 加入完整 Viewport 設定，防止手機自動微縮 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>氣密條長度計算工具</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f4f7f6;
             color: #333;
-            padding: 20px;
+            padding: 15px;
+            margin: 0;
         }
         .container {
             max-width: 1000px;
             margin: 0 auto;
             background-color: #fff;
-            padding: 20px 30px;
+            padding: 20px;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            box-sizing: border-box;
         }
         h2 {
             text-align: center;
             color: #2c3e50;
+            margin-top: 10px;
         }
         .controls {
             margin-bottom: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 10px;
         }
+        
+        /* 通用按鈕觸控優化 */
+        button {
+            touch-action: manipulation; /* 消除手機點擊 300ms 延遲與畫面誤放大 */
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        button:active {
+            transform: translateY(1px); /* 觸控時的回饋按壓感 */
+        }
+
         .btn-add {
             background-color: #27ae60;
             color: white;
             border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
+            padding: 12px 18px;
+            border-radius: 6px;
             font-size: 16px;
             cursor: pointer;
+            font-weight: bold;
+            white-space: nowrap;
         }
         .btn-add:hover {
             background-color: #219150;
         }
         .row {
             display: flex;
-            align-items: center;
-            gap: 15px;
+            align-items: flex-end;
+            gap: 12px;
             background-color: #f9f9f9;
             padding: 15px;
             border: 1px solid #ddd;
-            border-radius: 5px;
+            border-radius: 8px;
             margin-bottom: 15px;
             flex-wrap: wrap;
         }
         .input-group {
             display: flex;
             flex-direction: column;
+            flex: 1;
+            min-width: 120px;
         }
         .input-row {
             display: flex;
@@ -62,17 +81,20 @@
         }
         label {
             font-size: 14px;
-            margin-bottom: 5px;
+            margin-bottom: 6px;
             color: #555;
             font-weight: bold;
         }
         input[type="number"], select {
-            padding: 8px;
+            padding: 10px;
             border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 16px;
+            border-radius: 6px;
+            font-size: 16px; /* 16px 防止 iOS Safari 點擊輸入框時畫面自動放大 */
             background-color: #fff;
             color: #333;
+            width: 100%;
+            box-sizing: border-box;
+            touch-action: manipulation;
         }
         
         /* 隱藏 input type="number" 的上下箭頭 */
@@ -85,22 +107,19 @@
             -moz-appearance: textfield;
         }
 
-        .width-input, .height-input {
-            width: 80px;
-        }
         .qty-input {
-            width: 80px;
             text-align: center;
         }
         .btn-remove {
             background-color: #e74c3c;
             color: white;
             border: none;
-            padding: 8px 12px;
-            border-radius: 5px;
-            font-size: 14px;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 15px;
             cursor: pointer;
-            margin-top: 22px; 
+            height: 42px; /* 與輸入框對齊高度 */
+            white-space: nowrap;
         }
         .btn-remove:hover {
             background-color: #c0392b;
@@ -109,8 +128,8 @@
             background-color: #2980b9;
             color: white;
             border: none;
-            padding: 12px;
-            border-radius: 5px;
+            padding: 14px;
+            border-radius: 6px;
             font-size: 18px;
             width: 100%;
             cursor: pointer;
@@ -125,11 +144,48 @@
             padding: 15px;
             background-color: #e8f4f8;
             border: 1px solid #bce8f1;
-            border-radius: 5px;
+            border-radius: 6px;
             font-size: 20px;
             font-weight: bold;
             display: none; 
             text-align: center;
+        }
+
+        /* 📱 手機版專屬 RWD 自適應視覺 (螢幕寬度 600px 以下) */
+        @media (max-width: 600px) {
+            body {
+                padding: 8px;
+            }
+            .container {
+                padding: 15px 12px;
+            }
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .btn-add {
+                width: 100%;
+                text-align: center;
+            }
+            .row {
+                display: grid;
+                grid-template-columns: 1fr 1fr; /* 切換為兩欄直向網格 */
+                gap: 10px;
+                padding: 12px;
+            }
+            .input-group {
+                min-width: 0;
+            }
+            .input-group:nth-child(1) { grid-column: span 2; } /* 門框規格佔滿橫行 */
+            .input-group:nth-child(2) { grid-column: span 1; } /* 高度 */
+            .input-group:nth-child(3) { grid-column: span 1; } /* 寬度 */
+            .input-group:nth-child(4) { grid-column: span 1; } /* 數量 */
+            
+            .btn-remove {
+                grid-column: span 1;
+                width: 100%;
+                margin-top: 22px;
+            }
         }
     </style>
 </head>
@@ -139,7 +195,7 @@
     <h2>氣密條長度計算工具</h2>
     
     <div class="controls">
-        <span>請輸入各尺寸門框的高寬與數量：</span>
+        <span>請輸入各尺寸門框的高寬與數量（選台尺時請填台分）：</span>
         <button class="btn-add" onclick="addRow()">+ 新增尺寸</button>
     </div>
 
@@ -179,7 +235,7 @@
             <div class="input-group">
                 <label>高度</label>
                 <div class="input-row">
-                    <input type="number" step="1" class="height-input" placeholder="輸入高">
+                    <input type="number" step="1" class="height-input" placeholder="高">
                     <select class="height-unit">
                         <option value="cm">公分</option>
                         <option value="taiwan-foot">台尺</option>
@@ -189,7 +245,7 @@
             <div class="input-group">
                 <label>寬度</label>
                 <div class="input-row">
-                    <input type="number" step="1" class="width-input" placeholder="輸入寬">
+                    <input type="number" step="1" class="width-input" placeholder="寬">
                     <select class="width-unit">
                         <option value="cm">公分</option>
                         <option value="taiwan-foot">台尺</option>
@@ -236,7 +292,6 @@
             let widthCm = 0;
             let heightCm = 0;
 
-            // 精確換算成公分 (輸入值若為台分，除以 3.3 即可還原為精確公分)
             if (widthUnit === 'taiwan-foot') {
                 widthCm = rawWidth / 3.3;
             } else {
@@ -249,7 +304,6 @@
                 heightCm = rawHeight;
             }
 
-            // 判定門框規格對應的厚度 (cm)
             let thickness = 0;
             if (spec === 8.5) {
                 thickness = 2.1;
@@ -259,11 +313,8 @@
                 thickness = 2.7;
             }
 
-            // 扣除厚度：寬扣兩側 (2 * thickness)，高扣上方 (1 * thickness)
             const netWidth = widthCm - (thickness * 2);
             const netHeight = heightCm - thickness;
-
-            // 1 樘門框需要的總公分長度 (高*2 + 寬*1)
             const singleFrameCm = (netHeight * 2) + netWidth;
 
             totalCm += singleFrameCm * qty;
@@ -274,13 +325,11 @@
             return;
         }
 
-        // 精確轉為台尺：依照你的算式 * 3.3 / 100 (也就是 * 0.033)
+        // 精確轉為台尺 (* 0.033)
         const totalFeet = totalCm * 0.033;
-
         const resultArea = document.getElementById('result-area');
         const totalLengthSpan = document.getElementById('total-length');
         
-        // 顯示至小數點後兩位
         totalLengthSpan.innerText = totalFeet.toFixed(2);
         resultArea.style.display = 'block';
     }

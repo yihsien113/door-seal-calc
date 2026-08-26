@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>氣密條長度計算工具</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .btn-add {
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .btn-add:hover {
+            background-color: #219150;
+        }
+        .row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background-color: #f9f9f9;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .input-row {
+            display: flex;
+            gap: 5px;
+        }
+        label {
+            font-size: 14px;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: bold;
+        }
+        input[type="number"], select {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+            background-color: #fff;
+            color: #333;
+        }
+        
+        /* 隱藏 input type="number" 的上下箭頭 */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+
+        .width-input, .height-input {
+            width: 80px;
+        }
+        .qty-input {
+            width: 80px;
+            text-align: center;
+        }
+        .btn-remove {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 22px; 
+        }
+        .btn-remove:hover {
+            background-color: #c0392b;
+        }
+        .btn-calc {
+            background-color: #2980b9;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 5px;
+            font-size: 18px;
+            width: 100%;
+            cursor: pointer;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .btn-calc:hover {
+            background-color: #1f6391;
+        }
+        #result-area {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e8f4f8;
+            border: 1px solid #bce8f1;
+            border-radius: 5px;
+            font-size: 20px;
+            font-weight: bold;
+            display: none; 
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>氣密條長度計算工具</h2>
+    
+    <div class="controls">
+        <span>請輸入各尺寸門框的高寬與數量：</span>
+        <button class="btn-add" onclick="addRow()">+ 新增尺寸</button>
+    </div>
+
+    <div id="input-container">
+        <!-- 輸入列會透過 JavaScript 動態產生 -->
+    </div>
+
+    <button class="btn-calc" onclick="calculate()">計算總長度</button>
+
+    <div id="result-area">
+        總共需要氣密條長度： <span id="total-length" style="color: #27ae60;">0</span> 尺
+    </div>
+</div>
+
+<script>
+    window.onload = function() {
+        addRow();
+    };
+
+    function addRow() {
+        const container = document.getElementById('input-container');
+        const row = document.createElement('div');
+        row.className = 'row';
+
+        row.innerHTML = `
+            <div class="input-group">
+                <label>門框規格</label>
+                <select class="spec-select">
+                    <option value="8.5">8.5cm</option>
+                    <option value="10">10cm</option>
+                    <option value="11.5">11.5cm</option>
+                    <option value="13.5">13.5cm</option>
+                    <option value="14.5">14.5cm</option>
+                    <option value="15.5">15.5cm</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>高度</label>
+                <div class="input-row">
+                    <input type="number" step="1" class="height-input" placeholder="輸入高">
+                    <select class="height-unit">
+                        <option value="cm">公分</option>
+                        <option value="taiwan-foot">台尺</option>
+                    </select>
+                </div>
+            </div>
+            <div class="input-group">
+                <label>寬度</label>
+                <div class="input-row">
+                    <input type="number" step="1" class="width-input" placeholder="輸入寬">
+                    <select class="width-unit">
+                        <option value="cm">公分</option>
+                        <option value="taiwan-foot">台尺</option>
+                    </select>
+                </div>
+            </div>
+            <div class="input-group">
+                <label>門框數量 (樘)</label>
+                <input type="number" class="qty-input" value="1" placeholder="數量">
+            </div>
+            <button class="btn-remove" onclick="removeRow(this)">刪減</button>
+        `;
+        
+        container.appendChild(row);
+    }
+
+    function removeRow(button) {
+        const container = document.getElementById('input-container');
+        if (container.children.length > 1) {
+            button.parentElement.remove();
+        } else {
+            alert('這是最後一組，無法刪除喔！');
+        }
+    }
+
+    function calculate() {
+        const rows = document.querySelectorAll('.row');
+        let totalCm = 0;
+        let hasError = false;
+
+        rows.forEach((row) => {
+            const spec = parseFloat(row.querySelector('.spec-select').value);
+            let rawWidth = parseFloat(row.querySelector('.width-input').value);
+            const widthUnit = row.querySelector('.width-unit').value;
+            let rawHeight = parseFloat(row.querySelector('.height-input').value);
+            const heightUnit = row.querySelector('.height-unit').value;
+            const qty = parseInt(row.querySelector('.qty-input').value) || 0;
+
+            if (isNaN(rawWidth) || isNaN(rawHeight) || rawWidth <= 0 || rawHeight <= 0) {
+                hasError = true;
+                return;
+            }
+
+            let widthCm = 0;
+            let heightCm = 0;
+
+            // 精確換算成公分 (輸入值若為台分，除以 3.3 即可還原為精確公分)
+            if (widthUnit === 'taiwan-foot') {
+                widthCm = rawWidth / 3.3;
+            } else {
+                widthCm = rawWidth;
+            }
+
+            if (heightUnit === 'taiwan-foot') {
+                heightCm = rawHeight / 3.3;
+            } else {
+                heightCm = rawHeight;
+            }
+
+            // 判定門框規格對應的厚度 (cm)
+            let thickness = 0;
+            if (spec === 8.5) {
+                thickness = 2.1;
+            } else if (spec === 10 || spec === 11.5 || spec === 13.5) {
+                thickness = 2.4;
+            } else if (spec === 14.5 || spec === 15.5) {
+                thickness = 2.7;
+            }
+
+            // 扣除厚度：寬扣兩側 (2 * thickness)，高扣上方 (1 * thickness)
+            const netWidth = widthCm - (thickness * 2);
+            const netHeight = heightCm - thickness;
+
+            // 1 樘門框需要的總公分長度 (高*2 + 寬*1)
+            const singleFrameCm = (netHeight * 2) + netWidth;
+
+            totalCm += singleFrameCm * qty;
+        });
+
+        if (hasError) {
+            alert('請確認所有尺寸數值皆已完整輸入！');
+            return;
+        }
+
+        // 精確轉為台尺：依照你的算式 * 3.3 / 100 (也就是 * 0.033)
+        const totalFeet = totalCm * 0.033;
+
+        const resultArea = document.getElementById('result-area');
+        const totalLengthSpan = document.getElementById('total-length');
+        
+        // 顯示至小數點後兩位
+        totalLengthSpan.innerText = totalFeet.toFixed(2);
+        resultArea.style.display = 'block';
+    }
+</script>
+
+</body>
+</html>

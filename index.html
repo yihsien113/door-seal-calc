@@ -95,6 +95,7 @@
             width: 100%;
             box-sizing: border-box;
             touch-action: manipulation;
+            transition: background-color 0.2s, color 0.2s, border-color 0.2s;
         }
         
         /* 隱藏 input type="number" 的上下箭頭 */
@@ -110,6 +111,21 @@
         .qty-input {
             text-align: center;
         }
+
+        /* 單位選取後的動態背景與輸入框同步樣式 */
+        .unit-select-cm {
+            background-color: #ffffff !important; /* CM：白底 */
+            color: #333333 !important;
+            font-weight: bold;
+            border-color: #ccc !important;
+        }
+        .unit-select-taiwan {
+            background-color: #bcbcbc !important; /* 台尺：加深灰色底 */
+            color: #000000 !important;            /* 純黑字提高可讀性 */
+            font-weight: bold;
+            border-color: #888888 !important;
+        }
+
         .btn-remove {
             background-color: #e74c3c;
             color: white;
@@ -177,8 +193,8 @@
                 min-width: 0;
             }
             .input-group:nth-child(1) { grid-column: span 2; } /* 門框規格佔滿橫行 */
-            .input-group:nth-child(2) { grid-column: span 1; } /* 高度 */
-            .input-group:nth-child(3) { grid-column: span 1; } /* 寬度 */
+            .input-group:nth-child(2) { grid-column: span 1; } /* 高度 x 2 */
+            .input-group:nth-child(3) { grid-column: span 1; } /* 寬度 x 1 */
             .input-group:nth-child(4) { grid-column: span 1; } /* 數量 */
             
             .btn-remove {
@@ -215,6 +231,29 @@
         addRow();
     };
 
+    function updateUnitStyle(selectElement) {
+        const inputRow = selectElement.parentElement;
+        const textInput = inputRow.querySelector('input[type="number"]');
+
+        if (selectElement.value === 'cm') {
+            // CM：下拉選單與數字輸入框皆改為白底
+            selectElement.classList.add('unit-select-cm');
+            selectElement.classList.remove('unit-select-taiwan');
+            if (textInput) {
+                textInput.classList.add('unit-select-cm');
+                textInput.classList.remove('unit-select-taiwan');
+            }
+        } else {
+            // 台尺：下拉選單與數字輸入框皆改為深灰底
+            selectElement.classList.add('unit-select-taiwan');
+            selectElement.classList.remove('unit-select-cm');
+            if (textInput) {
+                textInput.classList.add('unit-select-taiwan');
+                textInput.classList.remove('unit-select-cm');
+            }
+        }
+    }
+
     function addRow() {
         const container = document.getElementById('input-container');
         const row = document.createElement('div');
@@ -233,21 +272,21 @@
                 </select>
             </div>
             <div class="input-group">
-                <label>高度</label>
+                <label>高度 x 2</label>
                 <div class="input-row">
-                    <input type="number" step="1" class="height-input" placeholder="高">
-                    <select class="height-unit">
-                        <option value="cm">公分</option>
+                    <input type="number" step="1" class="height-input unit-select-cm" placeholder="高">
+                    <select class="height-unit unit-select-cm" onchange="updateUnitStyle(this)">
+                        <option value="cm">CM</option>
                         <option value="taiwan-foot">台尺</option>
                     </select>
                 </div>
             </div>
             <div class="input-group">
-                <label>寬度</label>
+                <label>寬度 x 1</label>
                 <div class="input-row">
-                    <input type="number" step="1" class="width-input" placeholder="寬">
-                    <select class="width-unit">
-                        <option value="cm">公分</option>
+                    <input type="number" step="1" class="width-input unit-select-cm" placeholder="寬">
+                    <select class="width-unit unit-select-cm" onchange="updateUnitStyle(this)">
+                        <option value="cm">CM</option>
                         <option value="taiwan-foot">台尺</option>
                     </select>
                 </div>
